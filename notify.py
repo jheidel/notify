@@ -9,10 +9,13 @@ from subprocess import Popen, PIPE
 
 CRED_FILE = '/root/.config/irssi_credentials'
 
+LOG_FILE = '/var/log/notify'
 
-def notify(channel, msg):
+
+def notify(channel, msg, to=""):
   with open(CRED_FILE) as f:
-    creds = json.load(f)
+    config = json.load(f)
+  creds = config[to]
   notifier = IrssiNotifier(creds['token'], creds['password'])
   notifier.send(msg, chan='#%s' % channel, nick=socket.gethostname())
 
@@ -54,11 +57,19 @@ if __name__ == '__main__':
   if sys.argv < 3:
     print 'Usage: ./notify.py [channel] [message]'
     sys.exit(1)
+
+  logging.basicConfig(
+      filename=LOG_FILE, level=logging.DEBUG,
+      format=('%(asctime)s.%(msecs)d %(levelname)s %(module)s - %(funcName)s: '
+              '%(message)s'),
+      datefmt='%Y-%m-%d %H:%M:%S')
+
   chan = sys.argv[1]
   msg = sys.argv[2]
   if os.path.isfile(msg):
     logging.info('Loading message from file %s' % msg)
     with open(msg) as f:
       msg = f.read()
+  logging.info('Sending notification to channel "%s":\n%s' % (chan, msg))
   notify(chan, msg)
   sys.exit(0)
