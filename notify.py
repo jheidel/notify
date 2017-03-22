@@ -12,10 +12,10 @@ CRED_FILE = '/root/.config/irssi_credentials'
 LOG_FILE = '/var/log/notify'
 
 
-def notify(channel, msg, to=""):
+def notify(channel, msg, to=None):
   with open(CRED_FILE) as f:
     config = json.load(f)
-  creds = config[to]
+  creds = config[to] if to is not None else config[config['default_user']]
   notifier = IrssiNotifier(creds['token'], creds['password'])
   notifier.send(msg, chan='#%s' % channel, nick=socket.gethostname())
 
