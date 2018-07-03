@@ -27,7 +27,7 @@ class IrssiNotifier(object):
     self.enc_pass = enc_pass
 
   def encrypt(self, text):
-    command = 'openssl enc -aes-128-cbc -salt -base64 -A -pass env:OpenSSLEncPW'
+    command = 'openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass env:OpenSSLEncPW'
     opensslenv = os.environ.copy()
     opensslenv['OpenSSLEncPW'] = self.enc_pass
     output, errors = Popen(
