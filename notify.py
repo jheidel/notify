@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import json
 import logging
 import requests
 import socket
-import string, os, urllib, urllib2, shlex
+import string, os, urllib, shlex
 from subprocess import Popen, PIPE
 
 CRED_FILE = '/root/.config/irssi_credentials'
@@ -32,10 +32,11 @@ class IrssiNotifier(object):
     opensslenv['OpenSSLEncPW'] = self.enc_pass
     output, errors = Popen(
         shlex.split(command), stdin=PIPE, stdout=PIPE, stderr=PIPE,
-        env=opensslenv).communicate(text + ' ')
-    output = string.replace(output, '/', '_')
-    output = string.replace(output, '+', '-')
-    output = string.replace(output, '=', '')
+        env=opensslenv).communicate(str.encode(text + ' '))
+    output = output.decode('utf-8')
+    output = output.replace('/', '_')
+    output = output.replace('+', '-')
+    output = output.replace('=', '')
     return output
 
   def send(self, message, chan='#local', nick='server'):
@@ -44,7 +45,7 @@ class IrssiNotifier(object):
       'nick': self.encrypt(nick),
       'channel': self.encrypt(chan),
       'message': self.encrypt(message),
-      'version': 13,
+      'version': 24,
     }
     url = 'https://irssinotifier.appspot.com/API/Message'
     logging.info('Now sending message to irssinotifier API.')
@@ -54,8 +55,8 @@ class IrssiNotifier(object):
 
 if __name__ == '__main__':
   import sys
-  if sys.argv < 3:
-    print 'Usage: ./notify.py [channel] [message]'
+  if len(sys.argv) < 3:
+    print('Usage: ./notify.py [channel] [message]')
     sys.exit(1)
 
   logging.basicConfig(
